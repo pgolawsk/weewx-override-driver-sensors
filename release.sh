@@ -41,7 +41,11 @@ mkdir -p "${DIST_DIR}"
 ZIP_NAME="${REPO_NAME}-${VERSION}.zip"
 
 # ---- create zip ----
-zip -r "${DIST_DIR}/${ZIP_NAME}" . \
+zip -r "${DIST_DIR}/${ZIP_NAME}" \
+    install.py \
+    README.md \
+    LICENSE \
+    bin \
     -x "*.git*" \
     -x ".idea/*" \
     -x ".vscode/*" \
@@ -55,5 +59,5 @@ echo "✅ ZIP created:"
 echo "   ${DIST_DIR}/${ZIP_NAME}"
 echo
 echo "➡️  Suggested next steps:"
-echo "   git tag ${TAG}"
+echo "   git tag -a ${TAG} -m \"Release ${TAG}\""
 echo "   git push origin ${TAG}"
