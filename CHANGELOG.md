@@ -12,6 +12,12 @@ This project follows:
 
 ---
 
+## [0.1.2] - 2025-12-23
+
+Publish DEV pipeline changes.
+
+- Pylint workflow while making a push
+
 ## [0.1.1] - 2025-12-23
 
 Publish DEV pipeline changes.
