@@ -40,13 +40,16 @@ allows to override those.
 ## Installation
 
 ```bash
-weectl extension install https://github.com/pgolawsk/weewx-override-driver-sensors/archive/refs/heads/main.zip
+weectl extension install \
+  https://github.com/pgolawsk/weewx-override-driver-sensors/releases/latest/download/weewx-override-driver-sensors.zip
 ```
 
 or (older version of WeeWx)
 
 ```bash
-wee_extension --install https://github.com/pgolawsk/weewx-override-driver-sensors/archive/refs/heads/main.zip
+wee_extension --install \
+  https://github.com/pgolawsk/weewx-override-driver-sensors/releases/latest/download/weewx-override-driver-sensors.zip
+
 ```
 
 ---
