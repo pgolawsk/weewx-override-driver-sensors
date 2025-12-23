@@ -10,3 +10,4 @@ env/
 venv/
 *.log
 *.zip
+RELEASE_NOTES.md
