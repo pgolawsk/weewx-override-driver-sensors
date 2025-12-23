@@ -9,7 +9,8 @@ if [[ -z "$VERSION" ]]; then
 fi
 
 TAG="v$VERSION"
-ZIP_NAME="weewx-override-driver-sensors.zip"
+EXT_NAME="weewx-override-driver-sensors"
+ZIP_NAME="$EXT_NAME.zip"
 RELEASE_DIR="release"
 NOTES_FILE="$RELEASE_DIR/RELEASE_NOTES.md"
 
@@ -26,39 +27,62 @@ if git rev-parse "$TAG" >/dev/null 2>&1; then
     exit 1
 fi
 
+echo "Preparing release $TAG"
+
+for f in CHANGELOG.md README.md LICENSE install.py bin/user/OverrideDriverSensors.py; do
+    [[ -f "$f" ]] || { echo "Missing file: $f"; exit 1; }
+done
+
 mkdir -p "$RELEASE_DIR"
 
-echo "📦 Creating ZIP..."
-git archive \
-    --format=zip \
-    --prefix=weewx-override-driver-sensors/ \
-    HEAD \
-    -o "$RELEASE_DIR/$ZIP_NAME"
+# extract release notes from CHANGELOG
+awk -v ver="$VERSION" '
+    $0 ~ "^## \\[" ver "\\]" { in_section=1; print; next }
+    in_section && $0 ~ "^## \\[" { exit }
+    in_section { print }
+' CHANGELOG.md \
+| sed -E 's/^(#+)/\1#/; s/^##/#/' \
+| sed -E 's/^(#+)#/\1/' \
+| sed '${/^$/d;}' \
+> $RELEASE_DIR/RELEASE_NOTES.md
 
-echo "📝 Generating draft release notes..."
+if [[ ! -s $RELEASE_DIR/RELEASE_NOTES.md ]]; then
+    echo "ERROR: No changelog entry for version $VERSION"
+    exit 1
+fi
 
-LAST_TAG=$(git tag --sort=-v:refname | head -n 1 || true)
+echo "Generated $RELEASE_DIR/RELEASE_NOTES.md"
 
-{
-    echo "# Release $TAG"
-    echo
-    echo "## Changes"
-    echo
-    if [[ -n "$LAST_TAG" ]]; then
-        git log "$LAST_TAG"..HEAD --pretty=format:"- %s"
-    else
-    git log --pretty=format:"- %s"
-    fi
-    echo
-    echo "## Notes"
-    echo "- "
-} > "$NOTES_FILE"
+
+TMP_DIR="$(mktemp -d)"
+PKG_DIR="$TMP_DIR/$EXT_NAME"
+
+echo "📦 Assembling extension package..."
+
+mkdir -p "$PKG_DIR/bin/user"
+
+# copy ONLY installable files
+cp install.py "$PKG_DIR/"
+cp README.md "$PKG_DIR/"
+cp CHANGELOG.md "$PKG_DIR/"
+cp LICENSE "$PKG_DIR/"
+cp $RELEASE_DIR/RELEASE_NOTES.md "$PKG_DIR/"
+cp bin/user/OverrideDriverSensors.py "$PKG_DIR/bin/user/"
+
+echo "🗜 Creating ZIP..."
+(
+    cd "$TMP_DIR"
+    zip -r "$ZIP_NAME" "$EXT_NAME" >/dev/null
+)
+
+mv "$TMP_DIR/$ZIP_NAME" "$RELEASE_DIR/"
+rm -rf "$TMP_DIR"
 
 echo
 echo "✅ Prepared release:"
 echo "   Tag:    $TAG"
 echo "   ZIP:    $RELEASE_DIR/$ZIP_NAME"
-echo "   Notes:  $NOTES_FILE"
+echo "   Notes:  $RELEASE_DIR/RELEASE_NOTES.md"
 echo
-echo "👉 Review & edit RELEASE_NOTES.md, then run:"
-echo "   ./release/publish-release.sh $VERSION"
+echo "👉 Review $RELEASE_DIR/RELEASE_NOTES.md, then run:"
+echo "   ./publish-release.sh $VERSION"
