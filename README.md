@@ -66,7 +66,7 @@ Add or edit the section in weewx.conf:
     extraHumid4 = inHumidSalon
 ```
 
-Values are applied in order – first valid numeric value wins.
+Multiple values (separated by comma) are applied in order – first valid numeric value wins.
 
 **Engine** configuration - add the service before **StdConvert**:
 
