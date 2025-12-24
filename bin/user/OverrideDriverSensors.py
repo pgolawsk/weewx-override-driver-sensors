@@ -5,20 +5,33 @@
 # Pawelo, 20251221, created
 # Pawelo, 20251221, added reading rules from config file OverrideDriverSensors section
 # Pawelo, 20251221, added logging of applied overrides
-# Pawelo, 20251221, renamed class to Override
+# Pawelo, 20251221, renamed class to OverrideDS
 # Pawelo, 20251222, add check if value is number or float before applying override
+# Pawelo, 20251224, improved is_valid_number to handle numeric strings and numpy types
 
 import weewx
 import logging
 from weewx.engine import StdService
+import numbers
 
 log = logging.getLogger(__name__)
 
-# ---- helpers ----
+# helpers
 def is_valid_number(v):
-    return isinstance(v, (int, float)) and not isinstance(v, bool)
+    # reject booleans explicitly
+    if isinstance(v, bool):
+        return False
+    # accept Python real numbers and other numbers.Real (e.g., numpy scalars)
+    if isinstance(v, numbers.Real):
+        return True
+    # fallback: try coercing to float (covers numeric strings or numpy types)
+    try:
+        float(v)
+        return True
+    except Exception:
+        return False
 
-# ---- main class ----
+# main service class
 class OverrideDS(StdService):
 
     def __init__(self, engine, config_dict):
